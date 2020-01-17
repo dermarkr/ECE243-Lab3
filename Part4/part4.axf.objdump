@@ -1,0 +1,106 @@
+
+E:/ECE243/Lab3/Part4/part4.axf:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <__cs3_interrupt_vector>:
+/* Program that converts a binary number to decimal */
+           .text               // executable code follows
+           .global _start
+_start:
+            MOV    R4, #N
+   0:	e3a0408c 	mov	r4, #140	; 0x8c
+            MOV    R5, #Digits  // R5 points to the decimal digits storage location
+   4:	e3a05090 	mov	r5, #144	; 0x90
+			MOV    R8, #Divisor 
+   8:	e3a08094 	mov	r8, #148	; 0x94
+			LDR    R8, [R8]     // Loading the divisor to a registor
+   c:	e5988000 	ldr	r8, [r8]
+			MUL	   R9, R8, R8	// Creating Multiples of the Divisor
+  10:	e0090898 	mul	r9, r8, r8
+			MUL	   R10, R8, R9
+  14:	e00a0998 	mul	r10, r8, r9
+			MUL	   R11, R8, R10
+  18:	e00b0a98 	mul	r11, r8, r10
+            LDR    R4, [R4]     // R4 holds N
+  1c:	e5944000 	ldr	r4, [r4]
+            MOV    R0, R4       // parameter for DIVIDE goes in R0
+  20:	e1a00004 	mov	r0, r4
+            BL     DIVIDE
+  24:	eb000004 	bl	3c <DIVIDE>
+			STRB   R7, [R5, #3] // Thousands digit is now in R7
+  28:	e5c57003 	strb	r7, [r5, #3]
+			STRB   R6, [R5, #2] // Hundreds digit is now in R6
+  2c:	e5c56002 	strb	r6, [r5, #2]
+            STRB   R1, [R5, #1] // Tens digit is now in R1
+  30:	e5c51001 	strb	r1, [r5, #1]
+            STRB   R0, [R5]     // Ones digit is in R0
+  34:	e5c50000 	strb	r0, [r5]
+
+00000038 <END>:
+END:        B      END
+  38:	eafffffe 	b	38 <END>
+
+0000003c <DIVIDE>:
+
+/* Subroutine to perform the integer division R0 / 10.
+ * Returns: quotient in R1, and remainder in R0
+*/
+DIVIDE:     MOV    R2, #0		// Setting the quotients to zero
+  3c:	e3a02000 	mov	r2, #0
+			MOV	   R6, #0
+  40:	e3a06000 	mov	r6, #0
+			MOV    R7, #0
+  44:	e3a07000 	mov	r7, #0
+
+00000048 <DTHOU>:
+DTHOU:		CMP    R0, R10		// Checking if the value is greater than the Divisor to the fourth power 
+  48:	e150000a 	cmp	r0, r10
+            BLT    DHUND		// Moving to the next function if Divisor is greater than the remaining value
+  4c:	ba000002 	blt	5c <DHUND>
+            SUB    R0, R10		// Subtracting the divisor from the remaining value
+  50:	e040000a 	sub	r0, r0, r10
+            ADD    R7, #1		// incrementing Thousands value for each time through the full function
+  54:	e2877001 	add	r7, r7, #1
+            B      DTHOU		// going back to beginning of function 
+  58:	eafffffa 	b	48 <DTHOU>
+
+0000005c <DHUND>:
+DHUND:		CMP    R0, R9		// Checking if the value is greater than the Divisor to the Third power
+  5c:	e1500009 	cmp	r0, r9
+            BLT    DTEN			// Moving to the next function if Divisor is greater than the remaining value
+  60:	ba000002 	blt	70 <DTEN>
+            SUB    R0, R9		// Subtracting the divisor from the remaining value
+  64:	e0400009 	sub	r0, r0, r9
+            ADD    R6, #1		// incrementing Hundreds value for each time through the full function
+  68:	e2866001 	add	r6, r6, #1
+            B      DHUND		// going back to beginning of function
+  6c:	eafffffa 	b	5c <DHUND>
+
+00000070 <DTEN>:
+DTEN:       CMP    R0, R8		// Checking if the value is greater than the Divisor to the Second power
+  70:	e1500008 	cmp	r0, r8
+            BLT    DIV_END		// Moving to the next function if Divisor is greater than the remaining value
+  74:	ba000002 	blt	84 <DIV_END>
+            SUB    R0, R8		// Subtracting the divisor from the remaining value
+  78:	e0400008 	sub	r0, r0, r8
+            ADD    R2, #1		// incrementing Tens value for each time through the full function
+  7c:	e2822001 	add	r2, r2, #1
+            B      DTEN			// going back to beginning of function
+  80:	eafffffa 	b	70 <DTEN>
+
+00000084 <DIV_END>:
+DIV_END:    MOV    R1, R2     // quotient in R1 (remainder in R0)
+  84:	e1a01002 	mov	r1, r2
+            MOV    PC, LR
+  88:	e1a0f00e 	mov	pc, lr
+
+0000008c <N>:
+  8c:	00002694 	.word	0x00002694
+
+00000090 <Digits>:
+  90:	00000000 	.word	0x00000000
+
+00000094 <Divisor>:
+  94:	0000000a 	.word	0x0000000a
